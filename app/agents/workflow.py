@@ -8,7 +8,9 @@ from app.agents.planner import identify_intent
 from app.tools.customer_tool import fetch_high_value_customers
 from app.tools.scoring_tool import rank_customers
 from app.tools.recommendation_tool import generate_recommendations
-
+from app.tools.message_tool import (
+    create_outreach_messages
+)
 
 def planner_node(state: CRMState):
 
@@ -16,19 +18,22 @@ def planner_node(state: CRMState):
         state["user_query"]
     )
 
-    state["execution_plan"] = execution_plan
+    return {
+        "execution_plan": execution_plan,
+        "reasoning_steps": execution_plan[
+            "reasoning"
+        ]
+    }
 
-    state["reasoning_steps"] = execution_plan[
-        "reasoning"
-    ]
 
-    return state
-
-
-def customer_retrieval_node(state: CRMState):
+def customer_retrieval_node(
+    state: CRMState
+):
 
     customers = fetch_high_value_customers(
-    state["execution_plan"]["campaign_intent"]
+        state["execution_plan"][
+            "campaign_intent"
+        ]
     )
 
     serialized_customers = []
@@ -43,61 +48,66 @@ def customer_retrieval_node(state: CRMState):
             "age": customer.age
         })
 
-    state["customers"] = serialized_customers
-
-    add_reasoning_step(
-        state,
-        f"Retrieved {len(serialized_customers)} high-value customer profiles"
-    )
-
-    return state
-
-
+    return {
+        "customers": serialized_customers
+    }
 def scoring_node(state: CRMState):
 
     ranked_customers = rank_customers(
         state["customers"]
     )
 
-    state["scored_customers"] = ranked_customers
+    return {
+        "scored_customers": ranked_customers
+    }
 
-    add_reasoning_step(
-        state,
-        "Calculated conversion likelihood scores using heuristic analysis"
+
+def recommendation_node(
+    state: CRMState
+):
+
+    recommendations = (
+        generate_recommendations(
+            state["scored_customers"]
+        )
     )
 
-    return state
+    return {
+        "recommendations": recommendations
+    }
 
+def outreach_generation_node(
+    state: CRMState
+):
 
-def recommendation_node(state: CRMState):
-
-    recommendations = generate_recommendations(
-        state["scored_customers"]
+    outreach_messages = (
+        create_outreach_messages(
+            state["recommendations"]
+        )
     )
 
-    state["recommendations"] = recommendations
-
-    add_reasoning_step(
-        state,
-        "Generated product recommendations based on customer financial profiles"
-    )
-
-    return state
-
+    return {
+        "outreach_messages": outreach_messages
+    }
 
 def response_node(state: CRMState):
 
-    state["final_response"] = {
-        "query": state["user_query"],
+    return {
+        "final_response": {
+            "query": state["user_query"],
 
-        "identified_intent": state["execution_plan"]["campaign_intent"],
+            "execution_plan": state[
+                "execution_plan"
+            ],
 
-        "reasoning_steps": state["reasoning_steps"],
+            "reasoning_steps": state[
+                "reasoning_steps"
+            ],
 
-        "high_potential_customers": state["recommendations"][:5]
+            "high_potential_customers":
+                state["outreach_messages"]
+        }
     }
-
-    return state
 
 workflow = StateGraph(CRMState)
 
@@ -147,6 +157,19 @@ workflow.add_edge(
     "recommendation",
     "response"
 )
+workflow.add_node(
+    "outreach_generation_agent",
+    outreach_generation_node
+)
+workflow.add_edge(
+    "recommendation",
+    "outreach_generation_agent"
+)
+
+workflow.add_edge(
+    "outreach_generation_agent",
+    "response"
+)
 
 workflow.add_edge(
     "response",
@@ -154,3 +177,30 @@ workflow.add_edge(
 )
 
 crm_workflow = workflow.compile()
+
+from pathlib import Path
+
+
+def save_workflow_diagram():
+
+    diagram_path = Path(
+        "diagrams/langgraph_workflow.png"
+    )
+
+    diagram_path.parent.mkdir(
+        exist_ok=True
+    )
+
+    png_graph = crm_workflow.get_graph().draw_mermaid_png()
+
+    with open(diagram_path, "wb") as file:
+        file.write(png_graph)
+
+    print(
+        f"Workflow diagram saved to {diagram_path}"
+    )
+
+
+if __name__ == "__main__":
+
+    save_workflow_diagram()
