@@ -1,13 +1,5 @@
-from app.database.db import SessionLocal
-from app.database.models import Customer
+from app.services.customer_service import get_high_value_customers
 
 def fetch_high_value_customers():
 
-    db = SessionLocal()
-
-    customers = db.query(Customer).filter(
-        Customer.salary > 100000,
-        Customer.credit_score > 720
-    ).all()
-
-    return customers
+    return get_high_value_customers()
