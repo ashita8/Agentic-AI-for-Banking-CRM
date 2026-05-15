@@ -2,8 +2,7 @@ from fastapi import APIRouter
 
 from app.schema.request_schema import CustomerAnalysisRequest
 
-from app.agents.state import CRMState
-from app.agents.planner import identify_intent
+from app.agents.workflow import crm_workflow
 
 router = APIRouter()
 
@@ -11,11 +10,9 @@ router = APIRouter()
 @router.post("/analyze-customers")
 def analyze_customers(request: CustomerAnalysisRequest):
 
-    intent = identify_intent(request.query)
-
-    state: CRMState = {
+    initial_state = {
         "user_query": request.query,
-        "identified_intent": intent,
+        "identified_intent": "",
         "reasoning_steps": [],
         "customers": [],
         "scored_customers": [],
@@ -24,8 +21,8 @@ def analyze_customers(request: CustomerAnalysisRequest):
         "final_response": {}
     }
 
-    return {
-        "message": "Agent workflow initialized",
-        "identified_intent": intent,
-        "state": state
-    }
+    result = crm_workflow.invoke(
+        initial_state
+    )
+
+    return result["final_response"]

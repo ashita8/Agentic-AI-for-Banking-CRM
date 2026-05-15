@@ -1,18 +1,19 @@
 from app.services.recommendation_service import recommend_loan_product
 
-def generate_recommendations(ranked_customers):
+
+def generate_recommendations(scored_customers):
 
     recommendations = []
 
-    for item in ranked_customers:
+    for customer in scored_customers:
 
         product = recommend_loan_product(
-            item,
-            item["score"]
+            customer,
+            customer["conversion_score"]
         )
 
         recommendations.append({
-            **item,
+            **customer,
             "recommended_product": product
         })
 
