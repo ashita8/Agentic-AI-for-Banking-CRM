@@ -14,6 +14,13 @@ from app.tools.message_tool import (
 from app.tools.customer_intelligence_tool import (
     enrich_customer_profiles
 )
+from app.tools.transactional_tool import (
+    fetch_customer_transactions
+)
+
+from app.services.transaction_analysis_service import (
+    analyze_transactions
+)
 def planner_node(state: CRMState):
 
     execution_plan = identify_intent(
@@ -44,6 +51,8 @@ def customer_retrieval_node(
 
         serialized_customers.append({
         "name": customer.name,
+
+        "customer_id": customer.customer_id,
 
         "salary": customer.salary,
 
@@ -122,6 +131,35 @@ def customer_intelligence_node(
         "customers": enriched_customers
     }
 
+def transaction_analysis_node(
+    state: CRMState
+):
+
+    customer_ids = [
+        customer["customer_id"]
+        for customer in state[
+            "customers"
+        ]
+    ]
+
+    transactions = (
+        fetch_customer_transactions(
+            customer_ids
+        )
+    )
+
+    enriched_customers = (
+        analyze_transactions(
+            state["customers"],
+            transactions
+        )
+    )
+
+    return {
+        "customers":
+            enriched_customers
+    }
+
 def response_node(state: CRMState):
 
     return {
@@ -178,8 +216,17 @@ workflow.add_node(
     "customer_intelligence_agent",
     customer_intelligence_node
 )
+workflow.add_node(
+    "transaction_analysis_agent",
+    transaction_analysis_node
+)
 workflow.add_edge(
     "customer_retrieval",
+    "transaction_analysis_agent"
+)
+
+workflow.add_edge(
+    "transaction_analysis_agent",
     "customer_intelligence_agent"
 )
 

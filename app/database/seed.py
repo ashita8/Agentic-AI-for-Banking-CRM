@@ -1,8 +1,10 @@
 from faker import Faker
 from app.database.db import SessionLocal, init_db
-from app.database.models import Customer
 import random
-
+from app.database.models import (
+    Customer,
+    Transaction
+)
 fake = Faker()
 
 init_db()
@@ -45,6 +47,57 @@ for _ in range(100):
     )
 
     db.add(customer)
+
+merchant_categories = [
+    "Salary Credit",
+    "Travel",
+    "Shopping",
+    "EMI Payment",
+    "Dining",
+    "Insurance",
+    "Investment"
+]
+
+transaction_types = [
+    "Credit",
+    "Debit"
+]
+
+
+customers = db.query(Customer).all()
+
+for customer in customers:
+
+    for _ in range(
+        random.randint(15, 40)
+    ):
+
+        transaction = Transaction(
+
+            customer_id=customer.customer_id,
+
+            transaction_type=random.choice(
+                transaction_types
+            ),
+
+            amount=random.randint(
+                1000,
+                150000
+            ),
+
+            merchant_category=random.choice(
+                merchant_categories
+            ),
+
+            transaction_month=random.choice([
+                "January",
+                "February",
+                "March",
+                "April"
+            ])
+        )
+
+        db.add(transaction)
 
 db.commit()
 
