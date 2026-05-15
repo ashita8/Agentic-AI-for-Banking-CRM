@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.tools.customer_tool import fetch_high_value_customers
 from app.tools.scoring_tool import rank_customers
+from app.tools.recommendation_tool import generate_recommendations
 
 router = APIRouter()
 
@@ -12,4 +13,6 @@ def analyze_customers():
 
     ranked = rank_customers(customers)
 
-    return ranked[:10]
+    recommendations = generate_recommendations(ranked)
+
+    return recommendations[:10]
