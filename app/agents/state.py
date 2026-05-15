@@ -5,7 +5,7 @@ class CRMState(TypedDict):
 
     user_query: str
 
-    identified_intent: str
+    execution_plan: Dict[str, Any]
 
     reasoning_steps: List[str]
 

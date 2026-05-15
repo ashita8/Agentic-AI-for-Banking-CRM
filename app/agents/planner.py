@@ -1,11 +1,8 @@
-def identify_intent(query: str) -> str:
+from app.services.planner_service import (
+    generate_execution_plan
+)
 
-    query = query.lower()
 
-    if "personal loan" in query:
-        return "PERSONAL_LOAN_CAMPAIGN"
+def identify_intent(query: str):
 
-    if "investment" in query:
-        return "INVESTMENT_CAMPAIGN"
-
-    return "GENERAL_CUSTOMER_ANALYSIS"
+    return generate_execution_plan(query)

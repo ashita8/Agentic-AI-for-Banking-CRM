@@ -12,16 +12,15 @@ from app.tools.recommendation_tool import generate_recommendations
 
 def planner_node(state: CRMState):
 
-    intent = identify_intent(
+    execution_plan = identify_intent(
         state["user_query"]
     )
 
-    state["identified_intent"] = intent
+    state["execution_plan"] = execution_plan
 
-    add_reasoning_step(
-        state,
-        f"Identified campaign intent as {intent}"
-    )
+    state["reasoning_steps"] = execution_plan[
+        "reasoning"
+    ]
 
     return state
 
@@ -29,7 +28,7 @@ def planner_node(state: CRMState):
 def customer_retrieval_node(state: CRMState):
 
     customers = fetch_high_value_customers(
-    state["identified_intent"]
+    state["execution_plan"]["campaign_intent"]
     )
 
     serialized_customers = []
@@ -91,7 +90,7 @@ def response_node(state: CRMState):
     state["final_response"] = {
         "query": state["user_query"],
 
-        "identified_intent": state["identified_intent"],
+        "identified_intent": state["execution_plan"]["campaign_intent"],
 
         "reasoning_steps": state["reasoning_steps"],
 
