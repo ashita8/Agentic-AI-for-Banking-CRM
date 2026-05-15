@@ -18,13 +18,31 @@ llm = ChatGroq(
 def generate_personalized_message(customer):
 
     prompt = MESSAGE_PROMPT.format(
-        name=customer["name"],
-        salary=customer["salary"],
-        credit_score=customer["credit_score"],
-        recommended_product=customer[
-            "recommended_product"
-        ]
-    )
+    name=customer["name"],
+    city=customer["city"],
+    employment_type=customer[
+        "employment_type"
+    ],
+    salary=customer["salary"],
+    credit_score=customer[
+        "credit_score"
+    ],
+    relationship_years=customer[
+        "relationship_years"
+    ],
+    monthly_avg_transactions=customer[
+        "monthly_avg_transactions"
+    ],
+    last_loan_status=customer[
+        "last_loan_status"
+    ],
+    customer_insights=", ".join(
+        customer["customer_insights"]
+    ),
+    recommended_product=customer[
+        "recommended_product"
+    ]
+)
 
     response = llm.invoke(prompt)
 

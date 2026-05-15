@@ -16,7 +16,32 @@ for _ in range(100):
         age=random.randint(24, 55),
         salary=random.randint(40000, 250000),
         credit_score=random.randint(650, 850),
-        account_balance=random.randint(50000, 800000)
+        account_balance=random.randint(50000, 800000),
+        employment_type=random.choice([
+            "Salaried",
+            "Business",
+            "Self-Employed"
+        ]),
+
+        city=random.choice([
+            "Mumbai",
+            "Delhi",
+            "Bangalore",
+            "Hyderabad"
+        ]),
+
+        relationship_years=random.randint(1, 12),
+
+        monthly_avg_transactions=random.randint(
+            20,
+            150
+        ),
+
+        last_loan_status=random.choice([
+            "Closed Successfully",
+            "Active",
+            "Never Taken"
+        ])
     )
 
     db.add(customer)

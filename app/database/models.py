@@ -13,3 +13,8 @@ class Customer(Base):
     salary = Column(Float)
     credit_score = Column(Integer)
     account_balance = Column(Float)
+    employment_type = Column(String)
+    city = Column(String)
+    relationship_years = Column(Integer)
+    monthly_avg_transactions = Column(Float)
+    last_loan_status = Column(String)

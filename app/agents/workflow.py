@@ -11,7 +11,9 @@ from app.tools.recommendation_tool import generate_recommendations
 from app.tools.message_tool import (
     create_outreach_messages
 )
-
+from app.tools.customer_intelligence_tool import (
+    enrich_customer_profiles
+)
 def planner_node(state: CRMState):
 
     execution_plan = identify_intent(
@@ -41,12 +43,28 @@ def customer_retrieval_node(
     for customer in customers:
 
         serialized_customers.append({
-            "name": customer.name,
-            "salary": customer.salary,
-            "credit_score": customer.credit_score,
-            "account_balance": customer.account_balance,
-            "age": customer.age
-        })
+        "name": customer.name,
+
+        "salary": customer.salary,
+
+        "credit_score": customer.credit_score,
+
+        "account_balance": customer.account_balance,
+
+        "age": customer.age,
+
+        "employment_type": customer.employment_type,
+
+        "city": customer.city,
+
+        "relationship_years": customer.relationship_years,
+
+        "monthly_avg_transactions":
+            customer.monthly_avg_transactions,
+
+        "last_loan_status":
+            customer.last_loan_status
+    })
 
     return {
         "customers": serialized_customers
@@ -88,6 +106,20 @@ def outreach_generation_node(
 
     return {
         "outreach_messages": outreach_messages
+    }
+
+def customer_intelligence_node(
+    state: CRMState
+):
+
+    enriched_customers = (
+        enrich_customer_profiles(
+            state["customers"]
+        )
+    )
+
+    return {
+        "customers": enriched_customers
     }
 
 def response_node(state: CRMState):
@@ -142,9 +174,17 @@ workflow.add_edge(
     "planner",
     "customer_retrieval"
 )
-
+workflow.add_node(
+    "customer_intelligence_agent",
+    customer_intelligence_node
+)
 workflow.add_edge(
     "customer_retrieval",
+    "customer_intelligence_agent"
+)
+
+workflow.add_edge(
+    "customer_intelligence_agent",
     "scoring"
 )
 
@@ -170,6 +210,7 @@ workflow.add_edge(
     "outreach_generation_agent",
     "response"
 )
+
 
 workflow.add_edge(
     "response",
