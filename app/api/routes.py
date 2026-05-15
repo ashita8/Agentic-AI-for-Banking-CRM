@@ -1,5 +1,7 @@
 from fastapi import APIRouter
+
 from app.tools.customer_tool import fetch_high_value_customers
+from app.tools.scoring_tool import rank_customers
 
 router = APIRouter()
 
@@ -8,6 +10,6 @@ def analyze_customers():
 
     customers = fetch_high_value_customers()
 
-    return {
-        "customers_found": len(customers)
-    }
+    ranked = rank_customers(customers)
+
+    return ranked[:10]
